@@ -37,10 +37,11 @@ class NameVC: UIViewController {
                     saveToCoreData()
                     
                 } else {
-                    let controller = UIAlertController(title: "This name already exists", message: "" preferredStyle: .alert)
+                    textField.resignFirstResponder()
+                    let controller = UIAlertController(title: "This name already exists", message: "", preferredStyle: .alert)
                     let action = UIAlertAction(title: "OK", style: .cancel)
                     controller.addAction(action)
-                    present(controller,animated: true)
+                    present(controller,animated: true)                
                 }
             }
             updateUIAfterEdit()
