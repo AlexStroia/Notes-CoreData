@@ -15,14 +15,14 @@ class NameVC: UIViewController {
     @IBOutlet var longPressGestureRecognizer: UILongPressGestureRecognizer!
     @IBOutlet weak var textField: UITextField!
     var usersArray = [User]()
- 
+    
     @IBOutlet weak var tableView: UITableView!
     override func viewDidLoad() {
         super.viewDidLoad()
         loadFromCoreData()
     }
-
-
+    
+    
     @IBAction func Tap(_ sender: UIButton) {
         if (textField.text?.trimmingCharacters(in: .whitespaces).isEmpty)! {
             textField.placeholder = "Textfield is empty"
@@ -30,9 +30,27 @@ class NameVC: UIViewController {
             let user = User(context: context)
             user.name = textField.text
             user.registredDate = Date()
-            usersArray.append(user)
-            saveToCoreData()
+            
+            for user in usersArray {
+                if !usersArray.contains(user) {
+                    usersArray.append(user)
+                    saveToCoreData()
+                    
+                } else {
+                    let controller = UIAlertController(title: "This name already exists", message: "" preferredStyle: .alert)
+                    let action = UIAlertAction(title: "OK", style: .cancel)
+                    controller.addAction(action)
+                    present(controller,animated: true)
+                }
+            }
+            updateUIAfterEdit()
         }
+    }
+    
+    
+    private func updateUIAfterEdit() {
+        textField.text = ""
+        view.endEditing(true)
     }
     
     private func saveToCoreData() {
@@ -54,7 +72,7 @@ class NameVC: UIViewController {
         }
     }
     
-
+    
     @IBAction func deleteBtnAction(_ sender: UIButton) {
         let buttonPressedPosition = sender.convert(CGPoint.zero, to: self.tableView)
         let indexPath = self.tableView.indexPathForRow(at: buttonPressedPosition)
@@ -77,8 +95,8 @@ extension NameVC: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        context.delete(usersArray[indexPath.row])
-//        usersArray.remove(at: indexPath.row)
+        //        context.delete(usersArray[indexPath.row])
+        //        usersArray.remove(at: indexPath.row)
         performSegue(withIdentifier: "goToData", sender: self)
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -93,7 +111,5 @@ extension NameVC: UITableViewDataSource, UITableViewDelegate {
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
-    
-    
 }
 
