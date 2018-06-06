@@ -54,9 +54,11 @@ class NotesTableVC: UITableViewController {
             let item = Item(context: self.context)
             item.name = textField.text
             item.date = Date()
+            item.parentNote = note
             if let note = self.note {
                 item.noteName = note.name
             }
+            self.itemArray.append(item)
         }
         alertController.addTextField { (text) in
             textField = text
