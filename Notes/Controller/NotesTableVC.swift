@@ -12,19 +12,20 @@ import CoreData
 class NotesTableVC: UITableViewController {
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    var note: Note?
+    var selectedNote: Note? { didSet {
+        loadFromCoreData()
+        }}
     var itemArray = [Item]()
     
-    
-
     override func viewDidLoad() {
         super.viewDidLoad()
         initBarBtn()
 
     }
     
-    
-
+    override func viewDidAppear(_ animated: Bool) {
+        
+    }
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -49,21 +50,25 @@ class NotesTableVC: UITableViewController {
     @objc func handleSelection() {
         var textField = UITextField()
         let alertController = UIAlertController(title: "ADD", message: "", preferredStyle: .alert)
-        let action = UIAlertAction(title: "", style: .default) { (action) in
-            guard let note = self.note else { return }
+        let action = UIAlertAction(title: "OK", style: .default) { (action) in
+            guard let note = self.selectedNote else { return }
             let item = Item(context: self.context)
             item.name = textField.text
             item.date = Date()
             item.parentNote = note
-            if let note = self.note {
+            if let note = self.selectedNote {
                 item.noteName = note.name
             }
             self.itemArray.append(item)
+            self.saveToCoreData()
+            self.tableView.reloadData()
+            
         }
         alertController.addTextField { (text) in
             textField = text
         }
         alertController.addAction(action)
+        present(alertController, animated: true)
     }
 }
 
@@ -73,16 +78,18 @@ extension NotesTableVC {
     fileprivate func saveToCoreData() {
         do {
            try context.save()
+            print("Saved with succes")
         } catch {
             print("Exception has thrown: \(error)")
         }
     }
     
-    fileprivate func loadFromCoreData() {
-        let request: NSFetchRequest<Item> = Item.fetchRequest()
-        guard let note = note else { return }
-        let predicate = NSPredicate(format: "parentNote.note matches %@", note.name!)
+    fileprivate func loadFromCoreData(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+        guard let note = selectedNote else { return }
+        let predicate = NSPredicate(format: "parentNote.name MATCHES[cd] %@", note.name!)
+        let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
         request.predicate = predicate
+        request.sortDescriptors = [sortDescriptor]
         do {
             itemArray = try context.fetch(request)
         } catch {

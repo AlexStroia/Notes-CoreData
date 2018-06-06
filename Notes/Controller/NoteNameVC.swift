@@ -14,13 +14,12 @@ class NoteNameVC: UIViewController {
     
     @IBOutlet weak var textField: UITextField!
     var notesArray = [Note]()
-    
     @IBOutlet weak var tableView: UITableView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         loadFromCoreData()
     }
-    
     
     @IBAction func Tap(_ sender: UIButton) {
         if (textField.text?.trimmingCharacters(in: .whitespaces).isEmpty)! {
@@ -29,34 +28,23 @@ class NoteNameVC: UIViewController {
             let note = Note(context: context)
             note.name = textField.text
             note.registredDate = Date()
-            
-            if notesArray.isEmpty {
-                notesArray.append(note)
-                saveToCoreData()
-                textField.resignFirstResponder()
-            } else {
-            for note in notesArray {
-                if !notesArray.contains(note) {
-                    notesArray.append(note)
-                    saveToCoreData()
-                    textField.resignFirstResponder()
-                } else {
-                    textField.resignFirstResponder()
-                    let controller = UIAlertController(title: "This name already exists", message: "", preferredStyle: .alert)
-                    let action = UIAlertAction(title: "OK", style: .cancel)
-                    controller.addAction(action)
-                    present(controller,animated: true)                
-                }
-            }
-            updateUIAfterEdit()
+            notesArray.append(note)
+            saveToCoreData()
+            textField.resignFirstResponder()
         }
-        }
+         updateUIAfterEdit()
     }
     
     
     private func updateUIAfterEdit() {
         textField.text = ""
         view.endEditing(true)
+    }
+    
+    private func update() {
+        if let indexPath = tableView.indexPathForSelectedRow {
+        notesArray[indexPath.row].setValue("New Name", forKey: "name")
+        }
     }
     
     private func saveToCoreData() {
@@ -100,18 +88,14 @@ extension NoteNameVC: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //        context.delete(usersArray[indexPath.row])
-        //        usersArray.remove(at: indexPath.row)
-        tableView.deselectRow(at: indexPath, animated: true)
         performSegue(withIdentifier: "goToData", sender: self)
+        self.tableView.deselectRow(at: indexPath, animated: true)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let destinationVC = segue.destination as? NotesTableVC {
-            //DO THE STUFF, SET THE DELEGATE
-            if let indexPath = tableView.indexPathForSelectedRow {
-               destinationVC.note = notesArray[indexPath.row]
-            }
+        let destinationVC = segue.destination as! NotesTableVC
+        if let indexPath = tableView.indexPathForSelectedRow {
+            destinationVC.selectedNote = notesArray[indexPath.row]
         }
     }
     
