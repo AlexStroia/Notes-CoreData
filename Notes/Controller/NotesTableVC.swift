@@ -19,8 +19,11 @@ class NotesTableVC: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        initBarBtn()
 
     }
+    
+    
 
     // MARK: - Table view data source
 
@@ -37,7 +40,32 @@ class NotesTableVC: UITableViewController {
         cell.textLabel?.text = itemArray[indexPath.row].name
         return cell
     }
+    
+    private func initBarBtn() {
+        let barButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(handleSelection))
+        self.navigationItem.setRightBarButton(barButtonItem, animated: true)
+    }
+    
+    @objc func handleSelection() {
+        var textField = UITextField()
+        let alertController = UIAlertController(title: "ADD", message: "", preferredStyle: .alert)
+        let action = UIAlertAction(title: "", style: .default) { (action) in
+            guard let note = self.note else { return }
+            let item = Item(context: self.context)
+            item.name = textField.text
+            item.date = Date()
+            if let note = self.note {
+                item.noteName = note.name
+            }
+        }
+        alertController.addTextField { (text) in
+            textField = text
+        }
+        alertController.addAction(action)
+    }
 }
+
+//TODO: LOAD,SAVE ITEMS, DEPENDING ON THE DESCRIPTION
 
 extension NotesTableVC {
     fileprivate func saveToCoreData() {
@@ -51,7 +79,7 @@ extension NotesTableVC {
     fileprivate func loadFromCoreData() {
         let request: NSFetchRequest<Item> = Item.fetchRequest()
         guard let note = note else { return }
-        let predicate = NSPredicate(format: "noteName matches %@", note.name!)
+        let predicate = NSPredicate(format: "parentNote.note matches %@", note.name!)
         request.predicate = predicate
         do {
             itemArray = try context.fetch(request)
